@@ -1,0 +1,58 @@
+{
+  "game_counter": 3,
+  "games": {
+    "2": {
+      "home": "교황",
+      "away": "구름",
+      "match_time": "2026-02-19 19:00",
+      "prize": "100,000원",
+      "bets": {
+        "home": [
+          [
+            1025654755,
+            "hellomypy"
+          ]
+        ],
+        "draw": [],
+        "away": []
+      },
+      "message_id": 23,
+      "extra_message_ids": [
+        24,
+        25
+      ],
+      "closed": true,
+      "result": "home"
+    }
+  },
+  "stats": {
+    "total_games": 3,
+    "total_bettors": 4,
+    "total_winners": 3,
+    "winner_history": [
+      {
+        "game": "교황 vs 아흥",
+        "winner": "hellomypy",
+        "prize": "두름엄마",
+        "result": "홈 승 (교황)"
+      },
+      {
+        "game": "교황 vs 구름",
+        "winner": "hellomypy",
+        "prize": "100,000원",
+        "result": "홈 승 (교황)"
+      },
+      {
+        "game": "ryghd vs asdf",
+        "winner": "hellomypy",
+        "prize": "asdf",
+        "result": "홈 승 (ryghd)"
+      }
+    ]
+  },
+  "admin_ids": [
+    7192192,
+    7001739586,
+    1025654755
+  ]
+}
