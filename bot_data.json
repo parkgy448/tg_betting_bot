@@ -1,0 +1,176 @@
+{
+  "game_counter": 7,
+  "games": {
+    "2": {
+      "home": "교황",
+      "away": "구름",
+      "match_time": "2026-02-19 19:00",
+      "prize": "100,000원",
+      "bets": {
+        "home": [
+          [
+            1025654755,
+            "hellomypy"
+          ]
+        ],
+        "draw": [],
+        "away": []
+      },
+      "message_id": 23,
+      "extra_message_ids": [
+        24,
+        25
+      ],
+      "closed": true,
+      "result": "home"
+    },
+    "5": {
+      "home": "교황",
+      "away": "아흥",
+      "match_time": "2026-02-19 19::",
+      "prize": "10콩",
+      "bets": {
+        "home": [
+          [
+            1025654755,
+            "hellomypy"
+          ]
+        ],
+        "draw": [],
+        "away": []
+      },
+      "message_id": 35,
+      "extra_msg_ids": [
+        36,
+        37
+      ],
+      "closed": true,
+      "result": "home"
+    },
+    "6": {
+      "home": "페페",
+      "away": "누릉내",
+      "match_time": "2026-02-19 19:00",
+      "prize": "10콩",
+      "bets": {
+        "home": [
+          [
+            1025654755,
+            "hellomypy"
+          ],
+          [
+            7001739586,
+            "🙏"
+          ]
+        ],
+        "draw": [],
+        "away": [
+          [
+            8310097118,
+            "nooreungnae"
+          ]
+        ]
+      },
+      "message_id": 38,
+      "extra_msg_ids": [
+        39,
+        40
+      ],
+      "closed": true,
+      "result": "home"
+    },
+    "7": {
+      "home": "교황",
+      "away": "구름",
+      "match_time": "2026-02-20 15:36",
+      "prize": "10콩",
+      "max_winners": 5,
+      "bets": {
+        "home": [
+          [
+            1025654755,
+            "hellomypy"
+          ],
+          [
+            7001739586,
+            "🙏"
+          ]
+        ],
+        "draw": [
+          [
+            8310097118,
+            "nooreungnae"
+          ]
+        ],
+        "away": []
+      },
+      "message_id": 41,
+      "extra_msg_ids": [
+        42,
+        43
+      ],
+      "closed": true,
+      "result": "home"
+    }
+  },
+  "stats": {
+    "total_games": 7,
+    "total_bettors": 13,
+    "total_winners": 8,
+    "winner_history": [
+      {
+        "game": "교황 vs 아흥",
+        "winner": "hellomypy",
+        "prize": "두름엄마",
+        "result": "홈 승 (교황)"
+      },
+      {
+        "game": "교황 vs 구름",
+        "winner": "hellomypy",
+        "prize": "100,000원",
+        "result": "홈 승 (교황)"
+      },
+      {
+        "game": "ryghd vs asdf",
+        "winner": "hellomypy",
+        "prize": "asdf",
+        "result": "홈 승 (ryghd)"
+      },
+      {
+        "game": "느금마티비 vs 느금마티비",
+        "winner": "🙏",
+        "prize": "10콩",
+        "result": "홈 승 (느금마티비)"
+      },
+      {
+        "game": "교황 vs 아흥",
+        "winner": "hellomypy",
+        "prize": "10콩",
+        "result": "홈 승 (교황)"
+      },
+      {
+        "game": "페페 vs 누릉내",
+        "winner": "hellomypy",
+        "prize": "10콩",
+        "result": "홈 승 (페페)"
+      },
+      {
+        "game": "교황 vs 구름",
+        "winner": "hellomypy",
+        "prize": "10콩",
+        "result": "홈 승 (교황)"
+      },
+      {
+        "game": "교황 vs 구름",
+        "winner": "🙏",
+        "prize": "10콩",
+        "result": "홈 승 (교황)"
+      }
+    ]
+  },
+  "admin_ids": [
+    7192192,
+    7001739586,
+    1025654755
+  ]
+}
