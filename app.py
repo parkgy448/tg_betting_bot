@@ -33,7 +33,7 @@ from telegram.ext import (
 # ════════════════════════════════════════════════════
 BOT_TOKEN     = "8286715768:AAHNxIyGLuYo_P_VJ-_qCYtoryNwuFioj48"
 CHANNEL_ID    = "@skskkssk191919"
-ADMIN_CONTACT = "@hellomypy"
+ADMIN_CONTACT = "@Tiki_Talk4"
 PRIZE_TEXT    = "포인트 100,000원"
 
 # 관리자 텔레그램 ID (숫자) — 동적 추가/제거 가능
@@ -65,7 +65,7 @@ stats = {
 }
 
 # 대화 상태값
-WAIT_HOME, WAIT_AWAY, WAIT_DATE, WAIT_TIME, WAIT_PRIZE = range(5)
+WAIT_HOME, WAIT_AWAY, WAIT_DATE, WAIT_TIME, WAIT_PRIZE, WAIT_WINNERS = range(6)
 
 
 # ════════════════════════════════════════════════════
@@ -181,7 +181,7 @@ def make_betting_open_text(game: dict) -> str:
         f"vs\n"
         f"✈️ 원정 : {game['away']}\n"
         f"-----------------------------------\n"
-        f"🔥결과 적중자 랜덤 1명 선발 🔥\n"
+        f"🔥결과 적중자 랜덤 {game.get('max_winners', 1)}명 선발 🔥\n"
         f"🚀 {game.get('prize', PRIZE_TEXT)} 지급 !\n"
         f"✅ 배팅은 경기 시작 10분 전까지 가능 !\n"
         f"🧸경기 종료 후 당첨자 채널에 공지 !\n"
@@ -231,14 +231,16 @@ def make_result_text(game: dict, winner: str) -> str:
         f"경기 결과: {_winner_label(game, winner)} !!"
     )
 
-def make_winner_text(game: dict, winner: str, winner_name: str) -> str:
+def make_winner_text(game: dict, winner: str, winner_names: list) -> str:
+    count = len(winner_names)
+    winners_str = "\n".join(f"{i+1}. @{name} : {game.get('prize', PRIZE_TEXT)}" for i, name in enumerate(winner_names))
     return (
         f"🏆 당첨자 발표 !\n"
         f"({game['home']}) VS ({game['away']})\n"
         f"-----------------------------------\n"
         f"경기 결과: {_winner_label(game, winner)} !!\n"
-        f"당첨자 : 1명\n"
-        f"1. @{winner_name} : {game.get('prize', PRIZE_TEXT)}\n\n"
+        f"당첨자 : {count}명\n"
+        f"{winners_str}\n\n"
         f"당첨자 문의 : {ADMIN_CONTACT}"
     )
 
@@ -310,7 +312,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "━━━━━━━━━━━━━━━━━━━\n"
         "【 경기 등록 】\n"
         "/newgame\n"
-        "→ 홈팀 / 원정팀 / 날짜 / 시간 / 이벤트 상품\n"
+        "→ 홈팀 / 원정팀 / 날짜 / 시간 / 이벤트 상품 / 당첨자 수(1~10)\n"
         "   순서로 입력 → 채널에 베팅 공지 자동 게시\n\n"
         "【 결과 발표 】\n"
         "/result <game_id> <결과>\n"
@@ -390,25 +392,43 @@ async def got_time(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return WAIT_PRIZE
 
 async def got_prize(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data["prize"] = update.message.text.strip()
+    await update.message.reply_text(
+        "🏆 당첨자 수를 입력하세요. (1 ~ 10)\n\n"
+        "예) 1\n"
+        "예) 3"
+    )
+    return WAIT_WINNERS
+
+async def got_winners(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    raw = update.message.text.strip()
+    if not raw.isdigit() or not (1 <= int(raw) <= 10):
+        await update.message.reply_text(
+            "⚠️ 1 ~ 10 사이의 숫자를 입력해주세요.\n예) 1"
+        )
+        return WAIT_WINNERS
+
     global game_counter
     game_counter += 1
     game_id = str(game_counter)
 
-    home       = context.user_data["home"]
-    away       = context.user_data["away"]
-    date_str   = context.user_data["date"]
-    time_str   = context.user_data["time"]
-    prize      = update.message.text.strip()
-    match_time = f"{date_str} {time_str}"
+    home        = context.user_data["home"]
+    away        = context.user_data["away"]
+    date_str    = context.user_data["date"]
+    time_str    = context.user_data["time"]
+    prize       = context.user_data["prize"]
+    max_winners = int(raw)
+    match_time  = f"{date_str} {time_str}"
 
     games[game_id] = {
         "home":          home,
         "away":          away,
         "match_time":    match_time,
         "prize":         prize,
+        "max_winners":   max_winners,
         "bets":          {"home": [], "draw": [], "away": []},
-        "message_id":    None,    # 베팅 공지 메시지
-        "extra_msg_ids": [],      # 결과·당첨자·재추첨 메시지들
+        "message_id":    None,
+        "extra_msg_ids": [],
         "closed":        False,
         "result":        None,
     }
@@ -426,6 +446,7 @@ async def got_prize(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"✅ 경기 등록 완료!\n\n"
         f"🆔 game_id: {game_id}\n"
         f"🚀 이벤트 상품: {prize}\n"
+        f"🏆 당첨자 수: {max_winners}명\n"
         f"📢 채널에 베팅 공지를 올렸습니다.\n\n"
         f"[ 결과 입력 명령어 ]\n"
         f"/result {game_id} home  ← 홈팀 승\n"
@@ -613,29 +634,34 @@ async def result_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    _, winner_name = random.choice(candidates)
+    max_w = game.get("max_winners", 1)
+    pick_count = min(max_w, len(candidates))
+    picked = random.sample(candidates, pick_count)
+    winner_names = [name for _, name in picked]
 
     # 통계 업데이트
     stats["total_games"]   += 1
     stats["total_bettors"] += sum(len(game["bets"][k]) for k in ("home", "draw", "away"))
-    stats["total_winners"] += 1
-    stats["winner_history"].append({
-        "game":   f"{game['home']} vs {game['away']}",
-        "winner": winner_name,
-        "prize":  game.get("prize", PRIZE_TEXT),
-        "result": _winner_label(game, winner),
-    })
+    stats["total_winners"] += pick_count
+    for wname in winner_names:
+        stats["winner_history"].append({
+            "game":   f"{game['home']} vs {game['away']}",
+            "winner": wname,
+            "prize":  game.get("prize", PRIZE_TEXT),
+            "result": _winner_label(game, winner),
+        })
     game["result"] = winner
 
     winner_msg = await context.bot.send_message(
         chat_id=CHANNEL_ID,
-        text=make_winner_text(game, winner, winner_name),
+        text=make_winner_text(game, winner, winner_names),
     )
     game["extra_msg_ids"].append(winner_msg.message_id)
     save_data()  # 💾 저장
+    names_str = ", ".join(f"@{n}" for n in winner_names)
     await update.message.reply_text(
         f"✅ 결과 발표 및 추첨 완료!\n"
-        f"🏆 당첨자: @{winner_name}"
+        f"🏆 당첨자 ({pick_count}명): {names_str}"
     )
 
 
@@ -972,16 +998,23 @@ async def reroll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    _, new_winner_name = random.choice(candidates)
+    max_w = game.get("max_winners", 1)
+    pick_count = min(max_w, len(candidates))
+    picked = random.sample(candidates, pick_count)
+    new_winner_names = [name for _, name in picked]
 
     # 채널에 재추첨 결과 발표
+    winners_str = "\n".join(
+        f"{i+1}. @{name} : {game.get('prize', PRIZE_TEXT)}"
+        for i, name in enumerate(new_winner_names)
+    )
     reroll_text = (
         f"🔄 당첨자 재추첨 결과\n"
         f"({game['home']}) VS ({game['away']})\n"
         f"-----------------------------------\n"
         f"경기 결과: {_winner_label(game, winner)} !!\n"
-        f"재추첨 당첨자 : 1명\n"
-        f"1. @{new_winner_name} : {game.get('prize', PRIZE_TEXT)}\n\n"
+        f"재추첨 당첨자 : {pick_count}명\n"
+        f"{winners_str}\n\n"
         f"당첨자 문의 : {ADMIN_CONTACT}"
     )
 
@@ -991,9 +1024,10 @@ async def reroll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     game.setdefault("extra_msg_ids", []).append(reroll_msg.message_id)
     save_data()  # 💾 저장
+    names_str = ", ".join(f"@{n}" for n in new_winner_names)
     await update.message.reply_text(
         f"✅ 재추첨 완료!\n"
-        f"🏆 새 당첨자: @{new_winner_name}"
+        f"🏆 새 당첨자 ({pick_count}명): {names_str}"
     )
 
 
@@ -1009,11 +1043,12 @@ def main():
     conv = ConversationHandler(
         entry_points=[CommandHandler("newgame", newgame_start)],
         states={
-            WAIT_HOME:  [MessageHandler(filters.TEXT & ~filters.COMMAND, got_home)],
-            WAIT_AWAY:  [MessageHandler(filters.TEXT & ~filters.COMMAND, got_away)],
-            WAIT_DATE:  [MessageHandler(filters.TEXT & ~filters.COMMAND, got_date)],
-            WAIT_TIME:  [MessageHandler(filters.TEXT & ~filters.COMMAND, got_time)],
-            WAIT_PRIZE: [MessageHandler(filters.TEXT & ~filters.COMMAND, got_prize)],
+            WAIT_HOME:    [MessageHandler(filters.TEXT & ~filters.COMMAND, got_home)],
+            WAIT_AWAY:    [MessageHandler(filters.TEXT & ~filters.COMMAND, got_away)],
+            WAIT_DATE:    [MessageHandler(filters.TEXT & ~filters.COMMAND, got_date)],
+            WAIT_TIME:    [MessageHandler(filters.TEXT & ~filters.COMMAND, got_time)],
+            WAIT_PRIZE:   [MessageHandler(filters.TEXT & ~filters.COMMAND, got_prize)],
+            WAIT_WINNERS: [MessageHandler(filters.TEXT & ~filters.COMMAND, got_winners)],
         },
         fallbacks=[CommandHandler("cancel", cancel)],
     )
